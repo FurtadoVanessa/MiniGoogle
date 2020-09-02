@@ -1,0 +1,19 @@
+{
+  "name": "teste",
+  "version": "2.1.5",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "natural": "^2.1.5",
+    "node-fetch": "^2.6.0",
+    "normalize-text": "^2.3.1",
+    "stopword": "^1.0.1",
+    "string-strip-html": "^5.0.1"
+  }
+}
