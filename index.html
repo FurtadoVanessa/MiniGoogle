@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mini Google</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  </head>
+
+  <body>
+    <input type="text" placeholder="digite sua chave de busca" id="busca" />
+    <button type="button" onclick="getInputValue();">Pesquisar</button>
+    <textarea name="links" id="links" cols="30" rows="10"></textarea>
+
+    <script>
+      function getInputValue() {
+        var inputVal = document.getElementById("busca").value;
+        alert(inputVal);
+        // var top5 = await getTextos(inputVal);
+        // alert(top5);
+        $.ajax({
+          url: "http://localhost:3333/",
+          type: "GET",
+          data: { chave: inputVal },
+        }).done(function (resposta) {
+          var links = resposta.split(",");
+          var s = document.getElementById("links");
+          s.value = "";
+          for (link in links) {
+            s.value = s.value + "\n" + links[link];
+          }
+
+          alert(resposta);
+        });
+      }
+    </script>
+  </body>
+</html>

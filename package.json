@@ -10,10 +10,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "http": "0.0.1-security",
+    "http-server": "^0.12.3",
     "natural": "^2.1.5",
     "node-fetch": "^2.6.0",
     "normalize-text": "^2.3.1",
     "stopword": "^1.0.1",
-    "string-strip-html": "^5.0.1"
+    "string-strip-html": "^5.0.1",
+    "url": "^0.11.0"
   }
 }
