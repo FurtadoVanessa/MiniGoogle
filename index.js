@@ -1,11 +1,11 @@
-const fetch = require("node-fetch"); //recuperar texto de um arquivo na web
-const normalize = require("normalize-text"); //remover espaços e deixar tudo minúsculo
-const stripHtml = require("string-strip-html"); //remover html tag do texto
-var sw = require("stopword"); //remover stop words
-var natural = require("natural"); //radicalizar as palavras
-const http = require("http"); //servidor http para receber a requisição
-const urlParser = require("url"); //parser para obter a chave de busca a partir da url de requisição
-
+import fetch from "node-fetch"; //recuperar texto de um arquivo na web
+import normalize from "normalize-text"; //remover espaços e deixar tudo minúsculo
+import stripHtml from "string-strip-html"; //remover html tag do texto
+import sw from "stopword"; //remover stop words
+import natural from "natural"; //radicalizar as palavras
+import http from "http"; //servidor http para receber a requisição
+import urlParser from "url"; //parser para obter a chave de busca a partir da url de requisição
+import { url } from "./links.js";
 /**
  * Server http que fica escutando requisições. A chave de busca é recuperada através da url
  * de requisição, e entao é passada para que realize os cãculos necessários.
@@ -15,14 +15,13 @@ const urlParser = require("url"); //parser para obter a chave de busca a partir 
  * A requisição é feita do tipo "http://localhost:3333/?chave=curiosidade"
  */
 http
-  .createServer(async (request, response) => {
+  .createServer((request, response) => {
     var query = urlParser.parse(request.url, true).query;
-    var cossenos = await getTextos(query.chave);
+    var cossenos = processaPalavraChave(query.chave);
     var links = [];
-    for (var i = 0; i < cossenos.length; i++) {
+    for (var i = 0; i < 5; i++) {
       links[i] = url[cossenos[i][0]];
     }
-    console.log(cossenos);
     console.log(links);
     response.writeHead(200, { "Content-Type": "text/html" });
     response.write(links.toString());
@@ -33,15 +32,30 @@ http
 /**
  * Definição da lingua PT-BR para tabela de stop words
  */
-portuguesSw = sw.ptbr;
+//portuguesSw = sw.ptbr;
 
-var url = [
-  "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/index.html",
-  "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/rachel.html",
-  "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/ross.html",
-  "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/monica.html",
-  "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/primeira.html",
-];
+// var url = [
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/index.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/rachel.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/ross.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/monica.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/pheobe.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/chandler.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/joey.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/primeira.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/segunda.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/terceira.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/quarta.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/quinta.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/sexta.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/setima.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/oitava.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/nona.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/decima.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/elenco.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/historia.html",
+//   "https://furtadovanessa.github.io/ProgramacaoWebI/Interdisciplinar/curiosidades.html",
+// ];
 
 /**
  * matriz - matriz contendo todos os cálculos de vocabulário para os arquivos analisados(url)
@@ -50,7 +64,6 @@ var url = [
  * textosTratados - recebe o texto tratado com remoção de números, espaços e maiúsculas, tags html
  * e stop words
  */
-
 
 var matriz = [];
 
@@ -62,24 +75,31 @@ var textosTratados;
 
 /**
  * Inicializa as variáveis, trata os textos de cada arquivo, normaliza a matriz (deixando ela quadrada),
- * realiza os cálculos de TF-IDF, processa a chave de busca, a insere na matriz, e retorna a 
- * similaridade dos cossenos da matriz pronta
- * @param chave - chave de busca
+ * realiza os cálculos de TF-IDF,
  */
-async function getTextos(chave) {
-  matriz = [];
-  hash = new Map();
-  coluna = 0;
+hash = new Map();
+coluna = 0;
 
-  for (var i = 0; i <= url.length; i++) {
-    matriz[i] = [];
-  }
+for (var i = 0; i <= url.length; i++) {
+  matriz[i] = [];
+}
 
-  tratarTextos();  
+tratarTextos().then(() => {
   normalizarMatriz();
   calcularMatriz();
+  console.log("matriz esta pronta");
+});
+
+/**
+ * radicaliza a chave de busca, a insere na matriz, normaliza a matriz e retorna a similaridade do
+ * cosseno para a chave de busca inserida
+ * @param chave de busca a ser processada
+ */
+function processaPalavraChave(chave) {
+  matriz[url.length] = [];
   var chaveProcessada = done(chave);
   popularMatriz(chaveProcessada, url.length);
+  normalizarMatriz();
   return similaridadeDoCosseno();
 }
 
@@ -87,7 +107,7 @@ async function getTextos(chave) {
  * Recupera as informações de todos os links, trata o vocabulário de cada link, e para cada um desses,
  * popula a matriz
  */
-function tratarTextos(){
+async function tratarTextos() {
   textosTratados = await Promise.all(
     url.map(async (item, i) => {
       const response = await fetch(item);
@@ -130,7 +150,7 @@ function popularMatriz(conjuntoPalavras, link) {
  */
 function normalizarMatriz() {
   var maior = 0;
-  for (linha in matriz) {
+  for (var linha = 0; linha < matriz.length; linha++) {
     if (matriz[linha].length > maior) {
       maior = matriz[linha].length;
     }
@@ -154,7 +174,7 @@ function normalizarMatriz() {
  */
 function calcularMatriz() {
   var j = 0;
-  for (linha in matriz) {
+  for (var linha = 0; linha < matriz.length; linha++) {
     matriz[linha].forEach((coluna, index) => {
       var tf = 0;
       if (matriz[j][index] > 0) {
@@ -177,7 +197,7 @@ function calculaIdf(index) {
   var ocorrencias = 0;
   var quantidade = url.length;
 
-  for (linha in matriz) {
+  for (var linha = 0; linha < matriz.length; linha++) {
     if (matriz[linha][index] > 0) {
       ocorrencias += 1;
     }
@@ -191,17 +211,17 @@ function calculaIdf(index) {
  * @param item conteudo do arquivo
  */
 function done(item) {
-  newString = String(item).replace(/\d+/g, "");
+  var newString = String(item).replace(/\d+/g, "");
 
   const textoFino = normalize.normalizeText(newString);
 
   const testeSemHtml = stripHtml(textoFino).result;
 
-  return sw.removeStopwords(testeSemHtml.split(" "), portuguesSw);
+  return sw.removeStopwords(testeSemHtml.split(" "), sw.ptbr);
 }
 
 /**
- * Realiza o calculo de similaridade dos cossenos de cada arquivo, os ordena de forma decrescente 
+ * Realiza o calculo de similaridade dos cossenos de cada arquivo, os ordena de forma decrescente
  * e os retorna
  */
 
@@ -211,10 +231,11 @@ function similaridadeDoCosseno() {
 
   var vetorCosseno = [];
 
-  for (linha in matriz) {
+  for (var linha = 0; linha < matriz.length; linha++) {
     vetorL2[linha] = calculaL2(linha);
     vetorProdutoEscalar[linha] = produtoEscalar(linha);
   }
+  console.log("vetor produto ", vetorProdutoEscalar);
 
   var normaDaChave = vetorL2[vetorL2.length - 1];
 
@@ -262,6 +283,14 @@ function produtoEscalar(linha) {
   var linhaDaChave = url.length;
   var soma = 0;
   for (var i = 0; i < matriz[linha].length; i++) {
+    // console.log(
+    //   "soma ",
+    //   soma,
+    //   " matriz linha ",
+    //   matriz[linha][i],
+    //   "matriz chave ",
+    //   matriz[linhaDaChave][i]
+    // );
     soma = soma + matriz[linha][i] * matriz[linhaDaChave][i];
   }
   return soma;
