@@ -21,3 +21,8 @@ Para isso, abra um navegador e digite ```localhost/index.html```
 
 
 # Aproveite!
+
+
+Obs.: Caso não apareça nada em seu navegador, abra o Inspecionar Elemento, através do botão direito do mouse. Caso apareça um erro relacionado a CORS Origin, por favor, instale essa extensão em seu navegador (Chrome): https://chrome.google.com/webstore/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf?hl=en
+
+Se surgir outro erro, por favor, contate-nos.
